@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  backend:
+    build: .
+    container_name: "api"
+    restart: always
+    ports:
+      - "8080:8080"
+    networks:
+      - backend
+    env_file:
+      - .env
+    environment:
+      - DEBUG=${DEBUG}
+      - APP_NAME=${APP_NAME}
+      - DESCRIPTION=${DESCRIPTION}
+      - VERSION=${VERSION}
+      - SECRET_KEY=${SECRET_KEY}
+
+      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_DRIVER=${DATABASE_DRIVER}
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_PORT=${DATABASE_PORT}
+      - DATABASE_DATABASE=${DATABASE_DATABASE}
+
+      - TOKEN_ALGORITHM=${TOKEN_ALGORITHM}
+    volumes:
+      - ./:/src/app
+  
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: "pgadmin"
+    restart: always
+    ports:
+      - "5050:80"
+    env_file:
+      - .env
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+
+networks:
+  backend:
+    driver: bridge
