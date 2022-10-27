@@ -20,6 +20,10 @@ class SystemApp(BaseSettings):
     CORS_URL: str
 
     MODELS: List[str] = [
+        'src.models.user_model',
+        'src.models.session_model',
+        'src.models.contact_model',
+        'src.models.phone_model'
     ]
 
     class Config:

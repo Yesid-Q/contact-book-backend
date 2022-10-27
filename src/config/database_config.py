@@ -16,7 +16,7 @@ TORTOISE_ORM = {
                 'password': system_app.DATABASE_PASSWORD,
                 'port': system_app.DATABASE_PORT,
                 'user': system_app.DATABASE_USER,
-                'ssl': 'disable' if system_app.DEBUG else ctx
+                'ssl': ctx
             }
         }
     },

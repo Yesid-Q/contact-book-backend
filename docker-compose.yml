@@ -6,7 +6,7 @@ services:
     container_name: "api"
     restart: always
     ports:
-      - "8080:8080"
+      - 8080:8080
     networks:
       - backend
     env_file:
@@ -26,6 +26,8 @@ services:
       - DATABASE_DATABASE=${DATABASE_DATABASE}
 
       - TOKEN_ALGORITHM=${TOKEN_ALGORITHM}
+
+      - PORT=8080
     volumes:
       - ./:/src/app
   
