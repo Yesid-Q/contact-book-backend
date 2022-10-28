@@ -14,6 +14,8 @@ class SystemApp(BaseSettings):
     DATABASE_PASSWORD: str
     DATABASE_PORT: int
     DATABASE_DATABASE: str
+    LIFETIME_AUTH: int
+    LIFETIME_REFRESH: int
 
     TOKEN_ALGORITHM: str
 
