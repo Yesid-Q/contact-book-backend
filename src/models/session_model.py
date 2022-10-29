@@ -4,7 +4,7 @@ from tortoise.fields.relational import ForeignKeyField
 from src.models.base_model import BaseModel
 
 class SessionModel(BaseModel):
-    device = CharField(max_length=100)
+    device = CharField(max_length=200)
     token = CharField(max_length=255)
     refresh = CharField(max_length=255)
 
