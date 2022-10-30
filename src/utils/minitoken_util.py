@@ -1,7 +1,7 @@
 import base64
 from uuid import UUID
 
-from fastapi import Path, status
+from fastapi import Header, status
 from fastapi.exceptions import HTTPException
 
 
@@ -12,7 +12,7 @@ async def minitoken_encode(id: UUID) -> str:
     return tk
 
 
-async def minitoken_decode(token: str = Path(...)) -> UUID:
+async def minitoken_decode(token: str = Header(..., alias='Contact-Token')) -> UUID:
     try:
         bytes = token.encode('ascii')
         b64 = base64.b64decode(bytes)

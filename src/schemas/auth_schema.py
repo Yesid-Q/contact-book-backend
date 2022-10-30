@@ -27,19 +27,18 @@ class RecoveryRequest(BaseModel):
             raise ValueError('Contraseña no coinciden.')
         return v
 
-
 class LoginResponse(BaseModel):
-    auth_token: str
+    access_token: str
     type_token: str
     refresh_token: str
     
     class Config:
         allow_population_by_field_name = True
         fields = {
-            'auth_token': 'authToken',
+            'access_token': 'accessToken',
             'type_token': 'typeToken',
             'refresh_token': 'refreshToken'
         }
 
-class RestoreResponse(BaseModel):
+class RestoreResponse():
     token: str

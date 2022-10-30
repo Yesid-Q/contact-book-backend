@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Header, status
+from fastapi import APIRouter, Depends, Header, status, Response
 from fastapi.exceptions import HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from tortoise.queryset import Q
@@ -6,10 +6,8 @@ from tortoise.exceptions import IntegrityError
 
 from src.models import UserModel
 from src.schemas import (
-    OkResponse,
     LoginResponse,
     RegisterRequest,
-    Status,
     RestoreRequest,
     RestoreResponse,
     RecoveryRequest
@@ -24,8 +22,6 @@ from src.utils import (
     minitoken_decode
 )
 
-from src.enums.auth_enum import AuthEnum
-from src.enums.user_enum import ModelEnum
 
 auth_router = APIRouter(
     prefix= '/auth',
@@ -36,8 +32,8 @@ auth_router = APIRouter(
 @auth_router.post(
     '/login',
     name= 'login',
-    status_code= status.HTTP_200_OK,
-    response_model= OkResponse[LoginResponse]
+    status_code= status.HTTP_202_ACCEPTED,
+    response_model= LoginResponse
 )
 async def login_route(
     form: OAuth2PasswordRequestForm = Depends(),
@@ -50,7 +46,7 @@ async def login_route(
     error = HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail= {
-                'message': AuthEnum.CREDENTIALS,
+                'message': 'Credentials errors',
                 'detail': 'Credentials invalid.'
             }
         )
@@ -63,17 +59,14 @@ async def login_route(
 
     tokens = await create_tokens(user.id, user_agent)
     
-    return OkResponse(
-        message= AuthEnum.LOGIN,
-        status= Status.ok,
-        data= tokens).dict()
+    return tokens
 
 
 @auth_router.post(
     '/register',
     name= 'Register',
     status_code= status.HTTP_201_CREATED,
-    response_model= OkResponse[LoginResponse]
+    response_model= LoginResponse
 )
 async def register_route(
     request: RegisterRequest,
@@ -88,42 +81,35 @@ async def register_route(
     
     tokens = await create_tokens(user.id, user_agent)
     
-    return OkResponse(
-        message= AuthEnum.REGISTER,
-        status= Status.ok,
-        data= tokens).dict()
+    return tokens
 
 
 @auth_router.get(
     '/refresh',
     name= 'Refresh',
     status_code= status.HTTP_202_ACCEPTED,
-    response_model= OkResponse[LoginResponse]
+    response_model= LoginResponse
 )
 async def refresh_route(
     refresh_token: str = Header(...),
     user_agent: str | None = Header(default=None)
 ):
-    user = await validate_token(refresh_token[7:], status.HTTP_403_FORBIDDEN, AuthEnum.FORBIDDEN)
+    user = await validate_token(refresh_token[7:], status.HTTP_403_FORBIDDEN, 'Forbidden')
 
     tokens = await create_tokens(user.id, user_agent)
     
-    return OkResponse(
-        message= AuthEnum.RESTORE,
-        status= Status.ok,
-        data= tokens
-        ).dict()
+    return tokens
 
 
 @auth_router.post(
     '/restore',
     name= 'Restore',
-    status_code= status.HTTP_202_ACCEPTED,
-    response_model= OkResponse[RestoreResponse]
+    status_code= status.HTTP_204_NO_CONTENT,
 )
 async def restore_route(
     request: RestoreRequest,
-    #background_task: BackgroundTasks
+    #background_task: BackgroundTasks,
+    response: Response
 ):
     user = await UserModel.filter(Q(
         Q(username= request.username), Q(email= request.username), join_type= 'OR'
@@ -133,7 +119,7 @@ async def restore_route(
         raise HTTPException(
             status_code= status.HTTP_400_BAD_REQUEST,
             detail= {
-                'message': ModelEnum.NOT_EXIST,
+                'message': 'Not found user',
                 'detail': ''
             })
     
@@ -141,20 +127,16 @@ async def restore_route(
 
     #background_task.add_task(send_email, user.email, message=tk)
 
-    return OkResponse(
-        message= AuthEnum.RESTORE,
-        status= Status.ok,
-        data= {
-            'token': tk
-        }
-    ).dict()
+    response.headers['Contact-Token'] = tk
+
+    return 
 
 
-@auth_router.put(
-    '/recovery/{token}',
+@auth_router.patch(
+    '/recovery',
     name= 'Recovery',
     status_code= status.HTTP_202_ACCEPTED,
-    response_model= OkResponse[LoginResponse]
+    response_model= LoginResponse
 )
 async def recovery_route(
     request: RecoveryRequest,
@@ -167,7 +149,7 @@ async def recovery_route(
         raise HTTPException(
             status_code= status.HTTP_400_BAD_REQUEST,
             detail= {
-                'message': ModelEnum.NOT_EXIST,
+                'message': 'Not found user',
                 'detail': ''
             })
     password = await hash_password(request.new_password)
@@ -176,8 +158,4 @@ async def recovery_route(
 
     tokens = await create_tokens(token, user_agent)
     
-    return OkResponse(
-        message= AuthEnum.RESTORE,
-        status= Status.ok,
-        data= tokens
-        ).dict()
+    return tokens
