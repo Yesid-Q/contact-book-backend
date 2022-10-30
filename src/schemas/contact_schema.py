@@ -26,7 +26,7 @@ class ContactNumberRequest:
         self.number = number
 
         if self.name is None and self.number is None:
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail='Requiere nombre o numero')
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail='Name or phone number is required')
 
 
 class ContactRequest(BaseModel):

@@ -18,6 +18,6 @@ class ContactModel(BaseModel):
         table = 'contacts'
 
     def __str__(self):
-        return f'{self.name}-{self.lastname}'
+        return f'{self.name} {self.lastname}'
 
 

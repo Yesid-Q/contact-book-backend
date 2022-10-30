@@ -46,8 +46,8 @@ async def login_route(
     error = HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail= {
-                'message': 'Credentials errors',
-                'detail': 'Credentials invalid.'
+                'message': 'Invalid credentials',
+                'detail': 'Invalid credentials.'
             }
         )
 
@@ -119,8 +119,8 @@ async def restore_route(
         raise HTTPException(
             status_code= status.HTTP_400_BAD_REQUEST,
             detail= {
-                'message': 'Not found user',
-                'detail': ''
+                'message': 'User not found',
+                'detail': 'User not found'
             })
     
     tk = await minitoken_encode(user.id)
@@ -149,8 +149,8 @@ async def recovery_route(
         raise HTTPException(
             status_code= status.HTTP_400_BAD_REQUEST,
             detail= {
-                'message': 'Not found user',
-                'detail': ''
+                'message': 'User not found',
+                'detail': 'User not found'
             })
     password = await hash_password(request.new_password)
 
