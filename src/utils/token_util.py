@@ -2,31 +2,30 @@ from uuid import UUID
 from datetime import datetime, timedelta
 
 from jose import jwt, JWTError
-from fastapi import status
+from fastapi import Depends, status
 from fastapi.exceptions import HTTPException
 
 from src.config.system_config import system_app
+from src.config.oauth_config import oauth2_schema
 from src.models import SessionModel, UserModel
 from src.schemas import LoginResponse
-from src.enums.auth_enum import AuthEnum
-from src.enums.user_enum import ModelEnum
 
 async def create_tokens(id: UUID, user_agent: str = None) -> LoginResponse:
     expire_auth = datetime.utcnow() + timedelta(minutes=system_app.LIFETIME_AUTH)
     expire_refresh = datetime.utcnow() + timedelta(days=system_app.LIFETIME_REFRESH)
 
-    auth_token = jwt.encode({ 'exp': expire_auth, 'sub': str(id)}, system_app.SECRET_KEY, algorithm=system_app.TOKEN_ALGORITHM)
+    access_token = jwt.encode({ 'exp': expire_auth, 'sub': str(id)}, system_app.SECRET_KEY, algorithm=system_app.TOKEN_ALGORITHM)
     refresh_token = jwt.encode({ 'exp': expire_refresh, 'sub': str(id)}, system_app.SECRET_KEY, algorithm=system_app.TOKEN_ALGORITHM)
 
     await SessionModel.create(
-        token= auth_token,
+        token= access_token,
         refresh= refresh_token,
         user_id= id,
         device= '' if user_agent is None else user_agent
         )
 
     return {
-        'auth_token': auth_token,
+        'access_token': access_token,
         'refresh_token': refresh_token,
         'type_token': 'Bearer '
     }
@@ -35,10 +34,10 @@ async def create_tokens(id: UUID, user_agent: str = None) -> LoginResponse:
 async def validate_token(
     token: str,
     status_error = status.HTTP_401_UNAUTHORIZED,
-    message = AuthEnum.UNAUTHORIZED
+    message = ''
 ) -> UserModel:
     exception = HTTPException(
-        status_code=status,
+        status_code=status_error,
         detail= message,
         headers={'WWW-Authenticate': 'Bearer'}
     )
@@ -58,7 +57,11 @@ async def validate_token(
         raise exception
 
     if user.deleted_at is not None:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail= ModelEnum.DELETED_AT)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail= 'User inactivate')
 
     return user
 
+
+async def current_user(token: str = Depends(oauth2_schema)) -> UserModel:
+    auth: UserModel = await validate_token(token)
+    return auth
