@@ -12,3 +12,6 @@ class UserModel(BaseModel):
 
     class Meta:
         table = 'users'
+
+    def __str__(self):
+        return f'{self.username}'
