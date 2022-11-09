@@ -74,9 +74,9 @@ async def create_route(
         await ContactModel.filter(pk=contact.id).update(photo=path)
         contact.photo = path
 
-    await contact.fetch_related(Prefetch('phones', queryset= PhoneModel.filter(deleted_at__not_isnull=False).limit(2), to_attr='contact_id'))
+    new_contact = await ContactModel.filter(pk=contact.id).prefetch_related(Prefetch('phones', queryset= PhoneModel.filter(deleted_at__not_isnull=False).limit(2), to_attr='contact_id')).first()
     
-    return contact
+    return new_contact
 
 
 @contact_router.put(
