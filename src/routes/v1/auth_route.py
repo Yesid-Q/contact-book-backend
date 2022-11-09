@@ -9,11 +9,12 @@ from src.schemas import (
     LoginResponse,
     RegisterRequest,
     RestoreRequest,
-    RestoreResponse,
-    RecoveryRequest
+    RecoveryRequest,
+    CurrentUserResponse
 )
 from src.utils import (
     create_tokens,
+    current_user,
     hash_password,
     validate_password,
     validate_token,
@@ -159,3 +160,15 @@ async def recovery_route(
     tokens = await create_tokens(token, user_agent)
     
     return tokens
+
+
+@auth_router.get(
+    '',
+    name= 'Current info user',
+    status_code= status.HTTP_200_OK,
+    response_model= CurrentUserResponse
+)
+async def get_info(
+    auth: UserModel = Depends(current_user)
+):
+    return auth
