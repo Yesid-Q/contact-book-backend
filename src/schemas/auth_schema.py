@@ -1,6 +1,7 @@
 from pydantic import BaseModel, constr, EmailStr, Field, validator
 
 from src.types import PasswordType
+from src.schemas import BaseResponse
 
 class RestoreRequest(BaseModel):
     username: str = Field(...)
@@ -40,5 +41,6 @@ class LoginResponse(BaseModel):
             'refresh_token': 'refreshToken'
         }
 
-class RestoreResponse():
-    token: str
+class CurrentUserResponse(BaseResponse):
+    email: str
+    username: str
