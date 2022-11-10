@@ -4,7 +4,7 @@ from tortoise.fields.relational import ForeignKeyField, ReverseRelation
 from src.models.base_model import BaseModel
 
 class ContactModel(BaseModel):
-    name = CharField(max_length=100)
+    name = CharField(max_length=100, null=True)
     lastname = CharField(max_length=100, null=True)
     email = CharField(max_length=150, null=True)
     birthday = DateField(null=True)
@@ -16,6 +16,7 @@ class ContactModel(BaseModel):
 
     class Meta:
         table = 'contacts'
+        ordering = ['name', 'lastname', 'phones__number']
 
     def __str__(self):
         return f'{self.name} {self.lastname}'

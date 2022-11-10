@@ -26,26 +26,30 @@ async def contacts_route(
     delete: bool = Query(False),
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1),
+    search: str = Query(None, min_length=3),
     auth: UserModel = Depends(current_user)
 ):
-    result = await ContactModel.paginate(
-        Q(user=auth, deleted_at__not_isnull=delete, join_type='AND'),
-        prefetch=Prefetch('phones', queryset= PhoneModel.filter(deleted_at__not_isnull=False).limit(2), to_attr='contact_id'),
-        page= page, limit= limit
-    )
+    prefetch = Prefetch('phones', queryset= PhoneModel.filter(deleted_at__not_isnull=False), to_attr='contact_id')
+
+    if search is None:
+        query = Q(user=auth, deleted_at__not_isnull=delete, join_type='AND')
+    else:
+        query = Q(Q(user=auth, deleted_at__not_isnull=delete, join_type='AND'), Q(name__icontains= search, lastname__icontains=search, phones__number__icontains=search, join_type='OR'))
+
+    result = await ContactModel.paginate(query, prefetch=prefetch, page= page, limit= limit, )
     return result
 
 @contact_router.get(
     '/{id}',
     name= 'Delete/Restore Contact',
     status_code= status.HTTP_202_ACCEPTED,
-    response_model= ContactResponse
+    response_model= ContactPhonesResponse
 )
 async def get_one_route(id: UUID, delete: bool = Query(False), auth: UserModel = Depends(current_user)):
     if not await ContactModel.exists(pk= id, user=auth):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f'Contact not found by id {id}')
 
-    contact = await ContactModel.filter(pk=id).first()
+    contact = await ContactModel.filter(pk=id).first().prefetch_related(Prefetch('phones', queryset= PhoneModel.filter(deleted_at__not_isnull=delete).limit(2), to_attr='contact_id'))
 
     return contact
 
