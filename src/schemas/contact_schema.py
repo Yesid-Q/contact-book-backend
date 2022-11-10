@@ -18,9 +18,9 @@ class ContactNumberRequest:
         photo: Optional[UploadFile] = File(None),
         number: Optional[str] = Form(None, max_length=50, min_length=7)
     ):
-        self.name = name
-        self.lastname = lastname
-        self.email = email
+        self.name = name.lower() if name else name
+        self.lastname = lastname.lower() if lastname else lastname
+        self.email = email.lower() if email else email
         self.birthday = birthday
         self.photo = photo
         self.number = number
@@ -30,11 +30,16 @@ class ContactNumberRequest:
 
 
 class ContactRequest(BaseModel):
-    name: Optional[constr(max_length=100, min_length=3, strip_whitespace=True)] = Field(None)
-    lastname: Optional[constr(max_length=100, min_length=3, strip_whitespace=True)] = Field(None)
+    name: Optional[constr(max_length=100, min_length=3, strip_whitespace=True, to_lower=True)] = Field(None)
+    lastname: Optional[constr(max_length=100, min_length=3, strip_whitespace=True, to_lower=True)] = Field(None)
     email: Optional[EmailStr] = Field(None)
     birthday: Optional[date] = Field(None)
 
+    @validator('email')
+    def lower_email(cls, v: str):
+        if v is not None:
+            return v.lower()
+        return none
 
 class ContactResponse(BaseResponse):
     name: Optional[str] = Field(None)

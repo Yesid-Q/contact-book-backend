@@ -1,6 +1,6 @@
 from math import ceil
 from datetime import datetime
-from typing import Type
+from typing import Type, List
 
 from tortoise import Model
 from tortoise.models import MODEL
@@ -17,7 +17,6 @@ class BaseModel(Model):
 
     class Meta:
         abstract = True
-        ordering = ['created_at']
 
     async def delete(self) -> None:
         self.deleted_at = datetime.now() if self.deleted_at is None else None
@@ -28,7 +27,7 @@ class BaseModel(Model):
         cls: Type[MODEL],
         queryset: Q,
         prefetch: Prefetch|None = None,
-        page: int = 1, limit: int = 10
+        page: int = 1, limit: int = 10,
     ):
         counts: int = await cls.filter(queryset).count()
         if prefetch is None:
