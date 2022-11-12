@@ -7,22 +7,15 @@ from fastapi.exceptions import HTTPException
 
 from src.config.system_config import system_app
 from src.config.oauth_config import oauth2_schema
-from src.models import SessionModel, UserModel
+from src.models import UserModel
 from src.schemas import LoginResponse
 
-async def create_tokens(id: UUID, user_agent: str = None) -> LoginResponse:
+async def create_tokens(id: UUID) -> LoginResponse:
     expire_auth = datetime.utcnow() + timedelta(minutes=system_app.LIFETIME_AUTH)
     expire_refresh = datetime.utcnow() + timedelta(days=system_app.LIFETIME_REFRESH)
 
     access_token = jwt.encode({ 'exp': expire_auth, 'sub': str(id)}, system_app.SECRET_KEY, algorithm=system_app.TOKEN_ALGORITHM)
     refresh_token = jwt.encode({ 'exp': expire_refresh, 'sub': str(id)}, system_app.SECRET_KEY, algorithm=system_app.TOKEN_ALGORITHM)
-
-    await SessionModel.create(
-        token= access_token,
-        refresh= refresh_token,
-        user_id= id,
-        device= '' if user_agent is None else user_agent
-        )
 
     return {
         'access_token': access_token,
