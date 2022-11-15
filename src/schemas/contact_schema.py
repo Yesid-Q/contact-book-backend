@@ -39,7 +39,7 @@ class ContactRequest(BaseModel):
     def lower_email(cls, v: str):
         if v is not None:
             return v.lower()
-        return none
+        return None
 
 class ContactResponse(BaseResponse):
     name: Optional[str] = Field(None)
@@ -60,3 +60,7 @@ class ContactPhonesResponse(ContactResponse):
 
 class ListContactResponse(PaginateResponse):
     results: List[ContactPhonesResponse]
+
+class BirthdayResponse(BaseModel):
+    age: int
+    days: int

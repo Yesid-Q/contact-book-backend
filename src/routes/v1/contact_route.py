@@ -1,4 +1,5 @@
 from uuid import UUID
+from datetime import date
 
 from fastapi import APIRouter, Depends, status, Query, File, UploadFile
 from fastapi.exceptions import HTTPException
@@ -7,8 +8,9 @@ from tortoise.exceptions import IntegrityError
 from tortoise.query_utils import Prefetch
 
 from src.utils import current_user, save_image
+from src.types import Birthday
 from src.models import UserModel, ContactModel, PhoneModel
-from src.schemas import ContactRequest, ContactNumberRequest, ContactResponse, ListContactResponse, ContactPhonesResponse
+from src.schemas import ContactRequest, ContactNumberRequest, ContactResponse, ListContactResponse, ContactPhonesResponse, BirthdayResponse
 
 contact_router = APIRouter(
     prefix= '/contact',
@@ -39,6 +41,7 @@ async def contacts_route(
     result = await ContactModel.paginate(query, prefetch=prefetch, page= page, limit= limit, )
     return result
 
+
 @contact_router.get(
     '/{id}',
     name= 'Delete/Restore Contact',
@@ -52,6 +55,29 @@ async def get_one_route(id: UUID, delete: bool = Query(False), auth: UserModel =
     contact = await ContactModel.filter(pk=id).first().prefetch_related(Prefetch('phones', queryset= PhoneModel.filter(deleted_at__not_isnull=delete).limit(2), to_attr='contact_id'))
 
     return contact
+
+
+@contact_router.get(
+    '/{id}/birthday',
+    name= 'Birthday',
+    status_code= status.HTTP_200_OK,
+    response_model=BirthdayResponse
+)
+async def get_one_route(id: UUID, auth: UserModel = Depends(current_user)):
+    if not await ContactModel.exists(pk= id, user=auth):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f'Contact not found by id {id}')
+    
+    contact = await ContactModel.filter(pk=id).first()
+
+    if contact.birthday is None:
+        raise HTTPException(status_code=status.HTTP_405_METHOD_NOT_ALLOWED, detail='Contact does not have birthday')
+
+    now = date.today()
+    birthday_now = Birthday(str(now))
+    birthday_contact = Birthday(str(contact.birthday))
+
+    return birthday_now - birthday_contact
+
 
 
 @contact_router.post(
