@@ -4,7 +4,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from tortoise.queryset import Q
 from tortoise.exceptions import IntegrityError
 
-from src.models import UserModel
+from src.models import UserModel, SessionModel
 from src.schemas import (
     LoginResponse,
     RegisterRequest,
@@ -58,7 +58,14 @@ async def login_route(
     if not validate_password(form.password, user.password):
         raise error
 
-    tokens = await create_tokens(user.id, user_agent)
+    tokens = await create_tokens(user.id)
+
+    await SessionModel.create(
+        token= tokens['access_token'],
+        refresh= tokens['refresh_token'],
+        user_id= user.id,
+        device= '' if user_agent is None else user_agent
+    )
     
     return tokens
 
@@ -80,8 +87,15 @@ async def register_route(
     except IntegrityError as e:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f'{e}')
     
-    tokens = await create_tokens(user.id, user_agent)
+    tokens = await create_tokens(user.id)
     
+    await SessionModel.create(
+        token= tokens['access_token'],
+        refresh= tokens['refresh_token'],
+        user_id= user.id,
+        device= '' if user_agent is None else user_agent
+    )
+
     return tokens
 
 
@@ -97,7 +111,12 @@ async def refresh_route(
 ):
     user = await validate_token(refresh_token[7:], status.HTTP_403_FORBIDDEN, 'Forbidden')
 
-    tokens = await create_tokens(user.id, user_agent)
+    tokens = await create_tokens(user.id)
+
+    await SessionModel.filter(refresh=refresh_token[7:]).update(
+        token= tokens['access_token'],
+        refresh= tokens['refresh_token']
+    )
     
     return tokens
 
@@ -157,7 +176,15 @@ async def recovery_route(
 
     await UserModel.filter(pk=token).update(password= password)
 
-    tokens = await create_tokens(token, user_agent)
+    tokens = await create_tokens(token)
+
+    await SessionModel.create(
+        token= tokens['access_token'],
+        refresh= tokens['refresh_token'],
+        user_id= user.id,
+        device= '' if user_agent is None else user_agent
+    )
+
     
     return tokens
 
