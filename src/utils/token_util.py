@@ -11,7 +11,7 @@ from src.models import UserModel
 from src.schemas import LoginResponse
 
 async def create_tokens(id: UUID) -> LoginResponse:
-    expire_auth = datetime.utcnow() + timedelta(minutes=system_app.LIFETIME_AUTH)
+    expire_auth = datetime.utcnow() + timedelta(hours=system_app.LIFETIME_AUTH)
     expire_refresh = datetime.utcnow() + timedelta(days=system_app.LIFETIME_REFRESH)
 
     access_token = jwt.encode({ 'exp': expire_auth, 'sub': str(id)}, system_app.SECRET_KEY, algorithm=system_app.TOKEN_ALGORITHM)
