@@ -45,14 +45,18 @@ class ContactRequest(BaseModel):
     def len_name(cls, v: str):
         if v is None:
             return v
+        if len(v) == 0:
+            return None
         if len(v) < 2:
             raise ValueError('length minimium 3')
         return v
     
     @validator('lastname')
-    def len_name(cls, v: str):
+    def len_lastname(cls, v: str):
         if v is None:
             return v
+        if len(v) == 0:
+            return None
         if len(v) < 2:
             raise ValueError('length minimium 3')
         return v
