@@ -30,8 +30,8 @@ class ContactNumberRequest:
 
 
 class ContactRequest(BaseModel):
-    name: Optional[constr(max_length=100, min_length=3, strip_whitespace=True, to_lower=True)] = Field(None)
-    lastname: Optional[constr(max_length=100, min_length=3, strip_whitespace=True, to_lower=True)] = Field(None)
+    name: Optional[constr(max_length=100, strip_whitespace=True, to_lower=True)] = Field(None)
+    lastname: Optional[constr(max_length=100, strip_whitespace=True, to_lower=True)] = Field(None)
     email: Optional[EmailStr] = Field(None)
     birthday: Optional[date] = Field(None)
 
@@ -40,6 +40,22 @@ class ContactRequest(BaseModel):
         if v is not None:
             return v.lower()
         return None
+    
+    @validator('name')
+    def len_name(cls, v: str):
+        if v is None:
+            return v
+        if len(v) < 2:
+            raise ValueError('length minimium 3')
+        return v
+    
+    @validator('lastname')
+    def len_name(cls, v: str):
+        if v is None:
+            return v
+        if len(v) < 2:
+            raise ValueError('length minimium 3')
+        return v
 
 class ContactResponse(BaseResponse):
     name: Optional[str] = Field(None)
