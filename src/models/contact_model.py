@@ -16,7 +16,7 @@ class ContactModel(BaseModel):
 
     class Meta:
         table = 'contacts'
-        ordering = ['name', 'lastname', 'phones__number']
+        ordering = ['name', 'lastname']
 
     def __str__(self):
         return f'{self.name} {self.lastname}'

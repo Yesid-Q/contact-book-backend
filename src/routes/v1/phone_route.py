@@ -83,6 +83,23 @@ async def update_phone(
     return phone
 
 
+@phone_router.get(
+    '/{id}',
+    name= 'Get one number',
+    status_code= status.HTTP_202_ACCEPTED,
+    response_model= PhoneResponse
+)
+async def get_one_phone(
+    id: UUID,
+    auth: UserModel = Depends(current_user)
+):
+    if not await PhoneModel.exists(Q(contact__user_id=auth.id, pk=id, join_type='AND')):
+        raise HTTPException(status_code= status.HTTP_405_METHOD_NOT_ALLOWED, detail='Can not done operation')
+    phone = await PhoneModel.filter(Q(contact__user_id=auth.id, pk=id, join_type='AND')).first()
+
+    return phone
+
+
 @phone_router.delete(
     '/{id}',
     name= 'Delete/Restore phone',
