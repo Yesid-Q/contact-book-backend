@@ -47,7 +47,7 @@ async def create_phone(
     contact: UUID = Header(..., alias='X-Contact-ID'),
     auth: UserModel = Depends(current_user)
 ):
-    if not await ContacttModel.exists(Q(contact__user_id=auth.id, contact_id=contact, join_type='AND')):
+    if not await ContactModel.exists(Q(user_id=auth.id, pk=contact, join_type='AND')):
         raise HTTPException(status_code= status.HTTP_405_METHOD_NOT_ALLOWED, detail='Can not done operation')
 
     try:
