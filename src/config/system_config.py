@@ -8,7 +8,6 @@ class SystemApp(BaseSettings):
     VERSION: str
     SECRET_KEY: str
 
-    DATABASE_URL: str
     DATABASE_DRIVER: str
     DATABASE_USER: str
     DATABASE_PASSWORD: str
