@@ -44,7 +44,7 @@ async def contacts_route(
 
 @contact_router.get(
     '/{id}',
-    name= 'Delete/Restore Contact',
+    name= 'Get one contact',
     status_code= status.HTTP_202_ACCEPTED,
     response_model= ContactPhonesResponse
 )
