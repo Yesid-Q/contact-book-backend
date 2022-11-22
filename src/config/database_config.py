@@ -12,11 +12,11 @@ TORTOISE_ORM = {
             'engine': 'tortoise.backends.asyncpg',
             'credentials': {
                 'database': system_app.DATABASE_DATABASE,
-                'host': system_app.DATABASE_URL,
+                'host': 'database',
                 'password': system_app.DATABASE_PASSWORD,
                 'port': system_app.DATABASE_PORT,
                 'user': system_app.DATABASE_USER,
-                'ssl': ctx
+                'ssl': 'disable' if system_app.DEBUG else ctx
             }
         }
     },

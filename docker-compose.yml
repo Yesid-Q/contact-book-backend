@@ -3,12 +3,18 @@ version: '3.8'
 services:
   backend:
     build: .
+    depends_on:
+      database:
+        condition: service_started
     container_name: "api"
     restart: always
     ports:
-      - 8080:8080
+      - "8080:8080"
     networks:
       - backend
+      - database
+    links:
+      - database
     env_file:
       - .env
     environment:
@@ -17,8 +23,8 @@ services:
       - DESCRIPTION=${DESCRIPTION}
       - VERSION=${VERSION}
       - SECRET_KEY=${SECRET_KEY}
+      - CORS_URL=${CORS_URL}
 
-      - DATABASE_URL=${DATABASE_URL}
       - DATABASE_DRIVER=${DATABASE_DRIVER}
       - DATABASE_USER=${DATABASE_USER}
       - DATABASE_PASSWORD=${DATABASE_PASSWORD}
@@ -32,6 +38,22 @@ services:
       - PORT=8080
     volumes:
       - ./:/src/app
+
+  database:
+    image: "postgres:14.3-alpine"
+    container_name: "postgres"
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+      - POSTGRES_DB=${DATABASE_DATABASE}
+    expose:
+      - 5432
+    networks:
+      - database  
+    volumes:
+      - ./data:/docker-entrypoint-initdb.d/
   
   pgadmin:
     image: dpage/pgadmin4
@@ -39,12 +61,16 @@ services:
     restart: always
     ports:
       - "5050:80"
-    env_file:
-      - .env
+    networks:
+      - database
+    links:
+      - database
     environment:
       - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
       - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
 
 networks:
+  database:
+    driver: bridge
   backend:
     driver: bridge
