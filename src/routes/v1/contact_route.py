@@ -31,7 +31,7 @@ async def contacts_route(
     search: str = Query(None, min_length=3),
     auth: UserModel = Depends(current_user)
 ):
-    prefetch = Prefetch('phones', queryset= PhoneModel.filter(deleted_at__not_isnull=False).order_by('number'), to_attr='contact_id')
+    prefetch = Prefetch('phones', queryset= PhoneModel.filter(deleted_at__not_isnull=False).order_by('name', 'number'), to_attr='contact_id')
 
     if search is None:
         query = Q(user=auth, deleted_at__not_isnull=delete, join_type='AND')
