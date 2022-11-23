@@ -63,7 +63,7 @@ async def get_one_route(id: UUID, delete: bool = Query(False), auth: UserModel =
     status_code= status.HTTP_200_OK,
     response_model=BirthdayResponse
 )
-async def get_one_route(id: UUID, auth: UserModel = Depends(current_user)):
+async def birthday_route(id: UUID, auth: UserModel = Depends(current_user)):
     if not await ContactModel.exists(pk= id, user=auth):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f'Contact not found by id {id}')
     
